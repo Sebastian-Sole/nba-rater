@@ -130,11 +130,10 @@ export default async function Home() {
                   most_unanswered,
                 } = player.statistics;
                 return (
-                  <Card className="w-[30%]">
+                  <Card className="w-[30%]" key={player.id}>
                     <CardTitle>{player.full_name}</CardTitle>
                     <CardDescription>
-                      {" "}
-                      {player.jersey_number} / {player.primary_position} /{" "}
+                      {player.jersey_number} / {player.primary_position} /
                       {player.starter ? "Starter" : "Bench"}
                     </CardDescription>
                     <CardContent>
