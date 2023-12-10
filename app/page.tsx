@@ -81,10 +81,10 @@ export default async function Home() {
     <div>
       <h1>Home</h1>
 
-      {gameSummaries.map((gameSummary) => {
+      {gameSummaries.map((gameSummary, i) => {
         if (!gameSummary) {
           return (
-            <div>
+            <div key={i}>
               <h1>Box Score fetch error</h1>
             </div>
           );
@@ -109,7 +109,7 @@ export default async function Home() {
         });
 
         return (
-          <div>
+          <div key={gameSummary.id}>
             <h1>
               {away.name} vs {home.name}
             </h1>
