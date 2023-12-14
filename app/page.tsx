@@ -8,6 +8,11 @@ import {
   CardDescription,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  filterPlayersByMinutesPlayed,
+  getQuarterScores,
+  sortPlayersByMinutes,
+} from "@/utils/gameSummary";
 
 export default async function Home() {
   const selectedDate = {
@@ -92,26 +97,47 @@ export default async function Home() {
 
         const { away, home, lead_changes, times_tied } = gameSummary;
 
-        const { players: homePlayers } = home;
-
-        homePlayers.sort((a, b) => {
-          const aPoints = parseFloat(a.statistics.minutes);
-          const bPoints = parseFloat(b.statistics.minutes);
-
-          return bPoints - aPoints;
-        });
+        const homePlayers = sortPlayersByMinutes(home.players);
+        const awayPlayers = sortPlayersByMinutes(away.players);
 
         // Filter out players who played less than 10 minutes
 
-        const homePlayersFiltered = homePlayers.filter((player) => {
-          const minutes = parseFloat(player.statistics.minutes);
-          return minutes !== 0;
-        });
+        const homePlayersFiltered = filterPlayersByMinutesPlayed(
+          homePlayers,
+          0
+        );
+
+        const awayPlayersFiltered = filterPlayersByMinutesPlayed(
+          awayPlayers,
+          0
+        );
+
+        const homeQuarterScores = getQuarterScores(homePlayersFiltered);
+        const awayQuarterScores = getQuarterScores(awayPlayersFiltered);
+
+        const isOvertimeGame = homeQuarterScores.length > 4;
+
+        // Calculate the score after 3 quarters
+        const homeScoreAfter3 = homeQuarterScores
+          .slice(0, 3)
+          .reduce((acc, curr) => {
+            return acc + curr;
+          }, 0);
+
+        const awayScoreAfter3 = awayQuarterScores
+          .slice(0, 3)
+          .reduce((acc, curr) => {
+            return acc + curr;
+          }, 0);
+
+        const scoreDifferenceAfter3 = Math.abs(
+          homeScoreAfter3 - awayScoreAfter3
+        );
 
         return (
           <div key={gameSummary.id}>
             <h1>
-              {away.name} vs {home.name}
+              {away.name} vs {home.name} - {away.alias} + {home.alias}
             </h1>
 
             <h3>Lead Changes:{lead_changes}</h3>
@@ -127,13 +153,13 @@ export default async function Home() {
                   turnovers,
                   field_goals_pct,
                   minutes,
-                  most_unanswered,
                 } = player.statistics;
+
                 return (
                   <Card className="w-[30%]" key={player.id}>
                     <CardTitle>{player.full_name}</CardTitle>
                     <CardDescription>
-                      {player.jersey_number} / {player.primary_position} /
+                      {player.jersey_number} / {player.primary_position} /{" "}
                       {player.starter ? "Starter" : "Bench"}
                     </CardDescription>
                     <CardContent>
